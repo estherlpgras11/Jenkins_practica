@@ -14,6 +14,3 @@ Feature: shopping ACME stuff
         | cohete   |
         | dinamita |
         | yunque   |
-
-  Scenario: shop item
-    Then We want to buy a "cohete" with "coyote@acme.es" email
