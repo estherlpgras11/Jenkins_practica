@@ -1,0 +1,26 @@
+version: '2'
+services:
+  api:
+    build: backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  web:
+    build: frontend
+    ports:
+      - "8080:80"
+    environment:
+      APP_DEBUG: 1
+    depends_on:
+      - api
+
+  db:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    volumes:
+      - ./data:/docker-entrypoint-initdb.d/:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: root

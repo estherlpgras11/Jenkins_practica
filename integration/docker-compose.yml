@@ -1,0 +1,35 @@
+version: "2"
+services:
+  frontend:
+    build: ../frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - frontend
+  backend:
+    build: ../backend
+    environment:
+      APP_DEBUG: 1
+    ports:
+      - "5000:5000"
+    depends_on: 
+      - db
+    networks:
+      - frontend
+      - backend
+  db:
+    image: mysql:5.7
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ../data:/docker-entrypoint-initdb.d/:ro
+    networks:
+      - backend
+
+networks:
+  backend:
+  frontend:
