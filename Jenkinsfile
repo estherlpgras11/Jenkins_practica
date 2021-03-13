@@ -9,6 +9,13 @@ pipeline {
         timestamps() 
     }
 
+  environment {
+      DOCKER_REGISTRY = 'localhost:8082'
+  }
+
+  parameters {
+      string(name: 'registryUrl', defaultValue: env.DOCKER_REGISTRY, description: 'Docker registry url')
+  }
 
   stages {
 
@@ -73,6 +80,18 @@ pip install -r integration/requirements.txt
 */
   }
 
+    stage('Upload') {
+        steps {
+            withCredentials([usernamePassword(credentialsId: 'nexus',
+            usernameVariable: 'TWINE_USERNAME', passwordVariable: 'TWINE_PASSWORD')]) {
+                sh '. .env/bin/activate; pyb -o upload'
+                sh "docker login -u ${TWINE_USERNAME} -p ${TWINE_PASSWORD} ${params.registryUrl}"
+                sh "docker tag acme_master_web:latest ${params.registryUrl}/acme_master_web:1.0"
+                sh "docker push ${params.registryUrl}/acme_master_web:1.0"
+            }
+        }
+    }
+
     post {
 
      always {
@@ -110,10 +129,10 @@ pip install -r integration/requirements.txt
       sh 'echo "This will run only if the state of the Pipeline has changed"'
      }
   }
-  // post {
-  //   cleanup {
-  //     cleanWs()
-  //   }
+  post {
+    cleanup {
+      cleanWs()
+    }
 
   //   success {
   //     slackSend color: 'good', channel: 'ciclo-desarrollo-ci-cd', message: ":heavy_check_mark: Build [${BUILD_NUMBER}](${BUILD_URL}) passed"
