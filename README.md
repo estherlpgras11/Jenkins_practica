@@ -18,7 +18,7 @@ En el directorio Jenkinsfiles se han añadido 4 pipelines:
 
 * Crear cuatro  **pipelines multibranch** añadiendo la url del repositorio de Gitlab y especificando que use las credenciales creadas para Gitlab en el paso anterior e indicando el PATH del jenkinsfile correspondiente.
 
-* Crear un agent llamado "mac".
+* Crear un agent llamado "mac" con 4 ejecutores.
 
 ![agent](screenshots/agent_slave.jpg?raw=true "")
 
