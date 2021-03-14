@@ -7,11 +7,10 @@ En el directorio Jenkinsfiles se han añadido 4 pipelines:
 - **Jenkinsfile.backend** -> Testea el backend _(no me ha dado tiempo de añadir los test)_
 - **Jenkinsfile.integration** -> Pasa los test de integración, realiza los entregables y los publica en Nexus.
 
-#### Nota:
-``` 
-No he conseguido terminar la práctica a tiempo, pero he considerado que era mejor entregar una parte en lugar de no entregar nada. Me habría gustado poder completar la pipeline del backend y la parte de gitlab.
-```
-### Configuración en Jenkins
+> Nota: No he conseguido terminar la práctica a tiempo, pero he considerado que era mejor entregar una parte  en lugar de no entregar nada. Me habría gustado poder completar la pipeline del backend y la parte de gitlab.
+
+
+## Configuración en Jenkins
 
 * Crear las credenciales de **Nexus** y **Gitlab**:
 
@@ -39,12 +38,14 @@ sudo chmod 777 /var/run/docker.sock
 ![gmail2](screenshots/gmail2.jpg?raw=true "")
 
 
-### Configuración en Nexus
+## Configuración en Nexus
+
 * Crear un repositorio de Docker (hosted) que he llamado "hub".
 URL http://localhost:8081/repository/hub/
 Especificar un conector HTTP en el puerto 8082.
 
-### Resultados
+
+## Resultados
 
 * Añado imágenes con el stage View de cada pipeline:
 
@@ -61,7 +62,7 @@ Especificar un conector HTTP en el puerto 8082.
 ![nexus](screenshots/nexus.jpg?raw=true "")
 
 
-### Autora
+## Autora
 
 Autora: Esther López Gras <esther.lpgras@gmail.com>
 Fecha: Marzo 2021
