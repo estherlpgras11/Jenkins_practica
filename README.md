@@ -10,7 +10,7 @@ En el directorio Jenkinsfiles se han añadido 4 pipelines:
 > Nota: No he conseguido terminar la práctica a tiempo, pero he considerado que era mejor entregar una parte  en lugar de no entregar nada. Me habría gustado poder completar la pipeline del backend y la parte de gitlab.
 
 
-## Configuración en Jenkins
+## Jenkins
 
 * Crear las credenciales de **Nexus** y **Gitlab**:
 
@@ -38,7 +38,7 @@ sudo chmod 777 /var/run/docker.sock
 ![gmail2](screenshots/gmail2.jpg?raw=true "")
 
 
-## Configuración en Nexus
+## Nexus
 
 * Crear un repositorio de Docker (hosted) que he llamado "hub".
 URL http://localhost:8081/repository/hub/
