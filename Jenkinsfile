@@ -1,7 +1,7 @@
 pipeline {
 
   agent{
-    label "mac2"
+    label "mac"
   }
 
     triggers {
