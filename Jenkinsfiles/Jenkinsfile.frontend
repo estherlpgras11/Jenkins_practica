@@ -1,106 +1,93 @@
 pipeline {
+    agent{
+        label "mac2"
+    }
 
-  agent{
-    label "mac2"
-  }
     options {
-      timeout(time: 20, unit: 'MINUTES')
-      timestamps() 
-      }
+        timeout(time: 20, unit: 'MINUTES')
+        timestamps() 
+    }
 
-  stages {
-
+    stages {
         stage("Install dependencies") {
-          steps {
-            sh """
-            npm install
-            """
-          }
+            steps {
+                sh """
+                npm install
+                """
+            }
         }
 
         stage('Unit test') {
             steps {
                 script{
-                  echo "unit test"
+                    echo "unit test"
                 }
-  
             }            
         }
 
         stage('Linters') {
-          steps {
-            sh """
-            cd frontend
-            npm run lint
-            """
-          }
+            steps {
+                sh """
+                cd frontend
+                npm run lint
+                """
+            }
         }
 
         stage('Unit & e2e tests') {
-          steps {
-            sh """
-            cd frontend
-            npm run test
-            """
-            junit 'frontend/test/e2e/reports/*.xml'
-            junit 'frontend/test/unit/*.xml'
-          }
+            steps {
+                sh """
+                cd frontend
+                npm run test
+                """
+                junit 'frontend/test/e2e/reports/*.xml'
+                junit 'frontend/test/unit/*.xml'
+            }
         }
-
-      }
-  
+    }
 
   post {
-
-     always {
-       sh 'echo "This will always run"'
-      }
       cleanup {
-      cleanWs()
+          cleanWs()
+      }
+    
+      always {
+          echo "This will always run"
       }
 
-     success {
-      sh 'echo "This will run only if successful"'
+      success {
+          echo "This will run only if successful"
               script {
-                    if (currentBuild.currentResult == 'SUCCESS') { // Other values: SUCCESS, UNSTABLE, FAILURE
-                        // Send an email only if the build status has changed from green/unstable to red
-                        emailext subject: '$DEFAULT_SUBJECT',
-                            body: '$DEFAULT_CONTENT',
-                            recipientProviders: [
-                                [$class: 'CulpritsRecipientProvider'],
-                                [$class: 'DevelopersRecipientProvider'],
-                                [$class: 'RequesterRecipientProvider']
-                            ], 
-                            replyTo: '$DEFAULT_REPLYTO',
-                            to: '$DEFAULT_RECIPIENTS'
-                    }
-                }
+                  if (currentBuild.currentResult == 'SUCCESS') { 
+                      emailext subject: '$DEFAULT_SUBJECT',
+                          body: '$DEFAULT_CONTENT',
+                          recipientProviders: [
+                              [$class: 'CulpritsRecipientProvider'],
+                              [$class: 'DevelopersRecipientProvider'],
+                              [$class: 'RequesterRecipientProvider']
+                          ], 
+                          replyTo: '$DEFAULT_REPLYTO',
+                          to: '$DEFAULT_RECIPIENTS'
+                  }
+              }
      }
-     failure {
-      sh 'echo "This will run only if failed"'
-      sh 'echo "This will run only if successful"'
+
+      failure {
+          echo "This will run only if failed"
               script {
-                    if (currentBuild.currentResult == 'SUCCESS') { // Other values: SUCCESS, UNSTABLE, FAILURE
-                        // Send an email only if the build status has changed from green/unstable to red
-                        emailext subject: '$DEFAULT_SUBJECT',
-                            body: '$DEFAULT_CONTENT',
-                            recipientProviders: [
-                                [$class: 'CulpritsRecipientProvider'],
-                                [$class: 'DevelopersRecipientProvider'],
-                                [$class: 'RequesterRecipientProvider']
-                            ], 
-                            replyTo: '$DEFAULT_REPLYTO',
-                            to: '$DEFAULT_RECIPIENTS'
-                    }
-                }
-              
-     }
-     unstable {
-      sh 'echo "This will run only if the run was marked as unstable"'
-     }
-     changed {
-      sh 'echo "This will run only if the state of the Pipeline has changed"'
-     }
+                  if (currentBuild.currentResult == 'SUCCESS') {
+                      emailext subject: '$DEFAULT_SUBJECT',
+                          body: '$DEFAULT_CONTENT',
+                          recipientProviders: [
+                              [$class: 'CulpritsRecipientProvider'],
+                              [$class: 'DevelopersRecipientProvider'],
+                              [$class: 'RequesterRecipientProvider']
+                          ], 
+                          replyTo: '$DEFAULT_REPLYTO',
+                          to: '$DEFAULT_RECIPIENTS'
+                  }
+              }            
+      }
   }
 }
 

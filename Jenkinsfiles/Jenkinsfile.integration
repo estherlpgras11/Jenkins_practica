@@ -1,60 +1,58 @@
 pipeline {
+    agent{
+        label "mac2"
+    }
 
-  agent{
-    label "mac2"
-  }
     options {
         timeout(time: 20, unit: 'MINUTES')
         timestamps() 
     }
+
     environment {
-          DOCKER_REGISTRY = 'localhost:8082'
-      }
+        DOCKER_REGISTRY = 'localhost:8082'
+    }
 
     parameters {
-          string(name: 'registryUrl', defaultValue: 'localhost:8082', description: 'Docker registry url')
-          string(name: 'hubName', defaultValue: 'acme', description: 'Name of hub')
-          string(name: 'app_front', defaultValue: 'acme_frontend', description: 'app de front')
-          string(name: 'app_back', defaultValue: 'acme_backend', description: 'app de back')
-      }
+        string(name: 'registryUrl', defaultValue: 'localhost:8082', description: 'Docker registry url')
+        string(name: 'hubName', defaultValue: 'acme', description: 'Name of hub')
+        string(name: 'app_front', defaultValue: 'acme_frontend', description: 'app de front')
+        string(name: 'app_back', defaultValue: 'acme_backend', description: 'app de back')
+    }
 
-  stages {
-
+    stages {
         stage("Install dependencies") {
-          steps {
-            sh """
-            virtualenv .env
-            . .env/bin/activate
-            pip install -r integration/requirements.txt
-            """
-          }
+            steps {
+                sh """
+                virtualenv .env
+                . .env/bin/activate
+                pip install -r integration/requirements.txt
+                """
+            }
         }
 
         stage('Unit test') {
             steps {
                 script{
-                  echo "unit test"
-                  sh '. .env/bin/activate; behave integration/features --junit'
+                    echo "unit test"
+                    sh '. .env/bin/activate; behave integration/features --junit'
                 }
-  
             }            
         }
 
-
         stage('Building image') {
-              steps{
+            steps{
                 script {
-                  version = readFile('__VERSION__').trim()
+                    version = readFile('__VERSION__').trim()
                 }
-                  sh "docker build --no-cache -t ${params.app_front}:${version} ./frontend "
-                  sh "docker build --no-cache -t ${params.app_back}:${version} ./backend "
-              }
+                sh "docker build --no-cache -t ${params.app_front}:${version} ./frontend "
+                sh "docker build --no-cache -t ${params.app_back}:${version} ./backend "
             }
+        }
 
         stage('Upload') {
-              steps {
+            steps {
                 script {
-                   version = readFile('__VERSION__').trim()
+                    version = readFile('__VERSION__').trim()
                 }
                 withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'TWINE_USERNAME', passwordVariable: 'TWINE_PASSWORD')]) {
                     sh "docker login -u ${TWINE_USERNAME} -p ${TWINE_PASSWORD} ${params.registryUrl}"
@@ -63,64 +61,52 @@ pipeline {
                     sh "docker push ${params.registryUrl}/${params.app_front}:${version}"
                     sh "docker push ${params.registryUrl}/${params.app_back}:${version}"
                 }
-              }
-              
+            }    
         }
-  }
-
-    post {
-
-     always {
-       sh 'echo "This will always run"'
-       junit 'reports/*.xml'
-      }
-      cleanup {
-      cleanWs()
     }
 
-     success {
-      sh 'echo "This will run only if successful"'
-              script {
-                    if (currentBuild.currentResult == 'SUCCESS') { // Other values: SUCCESS, UNSTABLE, FAILURE
-                        // Send an email only if the build status has changed from green/unstable to red
-                        emailext subject: '$DEFAULT_SUBJECT',
-                            body: '$DEFAULT_CONTENT',
-                            recipientProviders: [
-                                [$class: 'CulpritsRecipientProvider'],
-                                [$class: 'DevelopersRecipientProvider'],
-                                [$class: 'RequesterRecipientProvider']
-                            ], 
-                            replyTo: '$DEFAULT_REPLYTO',
-                            to: '$DEFAULT_RECIPIENTS'
-                    }
-                }
-     }
-     failure {
-      sh 'echo "This will run only if failed"'
-      sh 'echo "This will run only if successful"'
-              script {
-                    if (currentBuild.currentResult == 'SUCCESS') { // Other values: SUCCESS, UNSTABLE, FAILURE
-                        // Send an email only if the build status has changed from green/unstable to red
-                        emailext subject: '$DEFAULT_SUBJECT',
-                            body: '$DEFAULT_CONTENT',
-                            recipientProviders: [
-                                [$class: 'CulpritsRecipientProvider'],
-                                [$class: 'DevelopersRecipientProvider'],
-                                [$class: 'RequesterRecipientProvider']
-                            ], 
-                            replyTo: '$DEFAULT_REPLYTO',
-                            to: '$DEFAULT_RECIPIENTS'
-                    }
-                }
-              
-     }
-     unstable {
-      sh 'echo "This will run only if the run was marked as unstable"'
-     }
-     changed {
-      sh 'echo "This will run only if the state of the Pipeline has changed"'
-     }
-  }
+    post {
+        cleanup {
+            cleanWs()
+        }  
 
+        always {
+            echo "This will always run"
+            junit 'reports/*.xml'
+        }
+
+        success {
+            echo "This will run only if successful"
+                script {
+                    if (currentBuild.currentResult == 'SUCCESS') { 
+                        emailext subject: '$DEFAULT_SUBJECT',
+                            body: '$DEFAULT_CONTENT',
+                            recipientProviders: [
+                                [$class: 'CulpritsRecipientProvider'],
+                                [$class: 'DevelopersRecipientProvider'],
+                                [$class: 'RequesterRecipientProvider']
+                            ], 
+                            replyTo: '$DEFAULT_REPLYTO',
+                            to: '$DEFAULT_RECIPIENTS'
+                    }
+                }
+        }
+
+        failure {
+            echo "This will run only if failed"
+                script {
+                    if (currentBuild.currentResult == 'SUCCESS') {
+                        emailext subject: '$DEFAULT_SUBJECT',
+                            body: '$DEFAULT_CONTENT',
+                            recipientProviders: [
+                                [$class: 'CulpritsRecipientProvider'],
+                                [$class: 'DevelopersRecipientProvider'],
+                                [$class: 'RequesterRecipientProvider']
+                            ], 
+                            replyTo: '$DEFAULT_REPLYTO',
+                            to: '$DEFAULT_RECIPIENTS'
+                    }
+                  }  
+        }
+    }
 }
-

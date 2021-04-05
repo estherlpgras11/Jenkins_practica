@@ -1,74 +1,72 @@
 pipeline {
-
-  agent{
-    label "mac2"
-  }
+    agent{
+        label "mac2"
+    }
 
     triggers {
-      pollSCM('') 
+        pollSCM('') 
       }
 
     options {
-      timeout(time: 20, unit: 'MINUTES')
-      timestamps() 
-      }
+        timeout(time: 20, unit: 'MINUTES')
+        timestamps() 
+    }
 
-  stages {
-
+    stages {
         stage('Build') {
-          steps {
-            sh "docker-compose build"
-            sh "docker-compose up -d"
-            echo "build"
-          }
+            steps {
+                sh "docker-compose build"
+                sh "docker-compose up -d"
+                echo "build"
+            }
         }
 
         stage('Frontend test') {
-               steps {
-                 build(job: 'acme_frontend/master',
-                       propagate: true,
-                       wait: true)
-          }
+            steps {
+                build(job: 'acme_frontend/master',
+                    propagate: true,
+                    wait: true)
+            }
         }
-        
+          
         stage('Backend test') {
-               steps {
-                 build(job: 'acme_backend/master',
-                       propagate: true,
-                       wait: true)
-          }
+            steps {
+                build(job: 'acme_backend/master',
+                    propagate: true,
+                    wait: true)
+            }
         }
+
         stage('Integration test') {
-               steps {
-                 build(job: 'acme/master',
-                       propagate: true,
-                       wait: true)
-          }
+            steps {
+                build(job: 'acme/master',
+                    propagate: true,
+                    wait: true)
+            }
         }
-        
+          
         stage('Stop') {
-          steps {
-            echo "STOP"
-            sh "docker-compose stop"
-            sh "docker-compose rm -f"
-          }
+            steps {
+                echo "STOP"
+                sh "docker-compose stop"
+                sh "docker-compose rm -f"
+            }
         }
-  }
+    }
 
-  post {
+    post {
+        cleanup {
+            cleanWs()
+        }
 
-     always {
-       sh 'echo "This will always run"'
-      }
-      cleanup {
-      cleanWs()
-      }
+        always {
+            sh 'echo "This will always run"'
+        }
 
-     success {
-      sh 'echo "This will run only if successful"'
-              script {
-                    if (currentBuild.currentResult == 'SUCCESS') { // Other values: SUCCESS, UNSTABLE, FAILURE
-                        // Send an email only if the build status has changed from green/unstable to red
+        success {
+            echo "This will run only if successful"
+                script {
+                    if (currentBuild.currentResult == 'SUCCESS') {
                         emailext subject: '$DEFAULT_SUBJECT',
                             body: '$DEFAULT_CONTENT',
                             recipientProviders: [
@@ -80,33 +78,25 @@ pipeline {
                             to: '$DEFAULT_RECIPIENTS'
                     }
                 }
-     }
-     failure {
-      sh 'echo "This will run only if failed"'
-      sh 'echo "This will run only if successful"'
+        }
+
+      failure {
+          echo "This will run only if failed"
               script {
-                    if (currentBuild.currentResult == 'SUCCESS') { // Other values: SUCCESS, UNSTABLE, FAILURE
-                        // Send an email only if the build status has changed from green/unstable to red
-                        emailext subject: '$DEFAULT_SUBJECT',
-                            body: '$DEFAULT_CONTENT',
-                            recipientProviders: [
-                                [$class: 'CulpritsRecipientProvider'],
-                                [$class: 'DevelopersRecipientProvider'],
-                                [$class: 'RequesterRecipientProvider']
-                            ], 
-                            replyTo: '$DEFAULT_REPLYTO',
-                            to: '$DEFAULT_RECIPIENTS'
-                    }
-                }
-              
-     }
-     unstable {
-      sh 'echo "This will run only if the run was marked as unstable"'
-     }
-     changed {
-      sh 'echo "This will run only if the state of the Pipeline has changed"'
-     }
-  }
+                  if (currentBuild.currentResult == 'SUCCESS') { 
+                      emailext subject: '$DEFAULT_SUBJECT',
+                          body: '$DEFAULT_CONTENT',
+                          recipientProviders: [
+                              [$class: 'CulpritsRecipientProvider'],
+                              [$class: 'DevelopersRecipientProvider'],
+                              [$class: 'RequesterRecipientProvider']
+                          ], 
+                          replyTo: '$DEFAULT_REPLYTO',
+                          to: '$DEFAULT_RECIPIENTS'
+                  }
+              }            
+      }
+    }
 }
 
 
