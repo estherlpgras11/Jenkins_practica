@@ -3,12 +3,9 @@
 He realizado esta práctica en **local** utilizando imágenes docker de **Jenkins** y **Nexus**. 
 En el directorio Jenkinsfiles se han añadido 4 pipelines:
 - **Jenkinsfile.master** -> Hace el build de la app, orquesta el resto de pipelines y al terminar el flujo para la app.
-- **Jenkinsfile.frontend** -> Testea el frontend _(no he conseguido que funcione, error ESlint)_
-- **Jenkinsfile.backend** -> Testea el backend _(no me ha dado tiempo de añadir los test)_
+- **Jenkinsfile.frontend** -> Testea el frontend 
+- **Jenkinsfile.backend** -> Testea el backend _(pendiente añadir los test)_
 - **Jenkinsfile.integration** -> Pasa los test de integración, realiza los entregables y los publica en Nexus.
-
-> Nota: No he conseguido terminar la práctica a tiempo, pero he considerado que era mejor entregar una parte  en lugar de no entregar nada. Me habría gustado poder completar la pipeline del backend y la parte de gitlab.
-
 
 ## Jenkins
 
